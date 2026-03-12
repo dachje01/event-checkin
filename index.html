@@ -1211,7 +1211,7 @@
       })
       .catch(function(err) {
         console.error('Walk-in Supabase error:', err.message);
-        showToast('!', 'Error: ' + err.message.substring(0, 80));
+        alert('Walk-in error: ' + err.message);
       });
   }
 
@@ -1369,7 +1369,7 @@
       showToast('✓', rows.length+' attendees imported');
     }).catch(function(err){
       console.error('Import error:', err.message);
-      showToast('!', 'Import error: ' + err.message.substring(0, 80));
+      alert('Import error: ' + err.message);
     });
   }
 
