@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EventIn — Check-In Console</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3d;
+    --accent: #00e5a0;
+    --accent2: #7c6ff7;
+    --warn: #ff6b6b;
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,160,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,160,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,15,0.95);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .logo {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.8); }
+  }
+
+  .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  .event-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .event-badge span { color: var(--text); font-weight: 500; }
+
+  .sync-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  .sync-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: background 0.3s;
+    flex-shrink: 0;
+  }
+
+  .sync-dot.live { background: var(--accent); box-shadow: 0 0 8px var(--accent); animation: pulse 1.5s ease-in-out infinite; }
+  .sync-dot.error { background: var(--warn); }
+
+  .header-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .header-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .header-btn.import-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  .stats-bar {
+    display: flex;
+    gap: 1px;
+    background: var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat-item {
+    flex: 1;
+    background: var(--surface);
+    padding: 14px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .stat-value {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+
+  .green { color: var(--accent); }
+  .purple { color: var(--accent2); }
+  .red { color: var(--warn); }
+
+  .progress-bar-wrap {
+    padding: 14px 32px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .progress-track {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    border-radius: 2px;
+    transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .progress-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  main {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .left-panel { border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+
+  .search-area {
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .search-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .search-wrap { position: relative; display: flex; gap: 10px; }
+
+  .search-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 13px 18px 13px 44px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: all 0.2s;
+  }
+
+  .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,229,160,0.08); }
+  .search-input::placeholder { color: var(--muted); }
+
+  .search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 18px;
+    pointer-events: none;
+  }
+
+  .filter-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0 14px;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+
+  .filter-btn.active, .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .attendee-list {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .attendee-row {
+    display: flex;
+    align-items: center;
+    padding: 13px 32px;
+    border-bottom: 1px solid rgba(42,42,61,0.5);
+    cursor: pointer;
+    transition: background 0.15s;
+    gap: 14px;
+  }
+
+  .attendee-row:hover { background: var(--surface2); }
+  .attendee-row.checked-in { background: rgba(0,229,160,0.04); }
+  .attendee-row.checked-in:hover { background: rgba(0,229,160,0.07); }
+
+  .avatar {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .avatar.checked::after {
+    content: '✓';
+    position: absolute;
+    inset: 0;
+    background: rgba(0,229,160,0.92);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+    color: #000;
+  }
+
+  .attendee-info { flex: 1; min-width: 0; }
+
+  .attendee-name {
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .attendee-name.struck { color: var(--muted); text-decoration: line-through; }
+
+  .attendee-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .attendee-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  .tag-vip { background: rgba(124,111,247,0.15); color: var(--accent2); border: 1px solid rgba(124,111,247,0.3); }
+  .tag-speaker { background: rgba(255,193,7,0.1); color: #ffc107; border: 1px solid rgba(255,193,7,0.3); }
+  .tag-staff { background: rgba(255,107,107,0.1); color: var(--warn); border: 1px solid rgba(255,107,107,0.3); }
+  .tag-general { background: rgba(107,107,138,0.1); color: var(--muted); border: 1px solid var(--border); }
+
+  .room-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: rgba(6,182,212,0.12);
+    color: #06b6d4;
+    border: 1px solid rgba(6,182,212,0.25);
+    white-space: nowrap;
+  }
+
+  .checkin-time { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--accent); }
+
+  .check-btn {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .check-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,229,160,0.08); }
+  .check-btn.done { border-color: var(--accent); background: var(--accent); color: #000; }
+
+  .right-panel { background: var(--surface); display: flex; flex-direction: column; }
+
+  .panel-header {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse 1.5s ease-in-out infinite;
+    display: inline-block;
+    margin-right: 6px;
+  }
+
+  .activity-feed {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .activity-item {
+    padding: 11px 20px;
+    border-bottom: 1px solid rgba(42,42,61,0.4);
+    animation: slideIn 0.3s ease-out;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .activity-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+
+  .activity-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .activity-time { color: var(--accent); }
+
+  .add-section { padding: 14px 20px; border-top: 1px solid var(--border); flex-shrink: 0; }
+
+  .add-section-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .add-form { display: flex; flex-direction: column; gap: 7px; }
+
+  .add-input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 13px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: all 0.2s;
+    width: 100%;
+  }
+
+  .add-input:focus { border-color: var(--accent2); }
+  .add-input::placeholder { color: var(--muted); font-size: 12px; }
+
+  .add-row { display: flex; gap: 7px; }
+
+  .add-select {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 13px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .add-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 16px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .add-btn:hover { background: #00ffb3; }
+
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 13px 22px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 1000;
+    pointer-events: none;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.82);
+    backdrop-filter: blur(8px);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 34px;
+    width: 100%;
+    max-width: 480px;
+    animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal.wide { max-width: 560px; }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.92); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .modal-title { font-size: 22px; font-weight: 800; margin-bottom: 5px; letter-spacing: -0.5px; }
+  .modal-sub { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); margin-bottom: 24px; }
+  .modal-field { margin-bottom: 14px; }
+
+  .modal-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .modal-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 15px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s;
+  }
+
+  .modal-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,229,160,0.08); }
+
+  .modal-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    padding: 15px;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.2s;
+  }
+
+  .modal-btn:hover { background: #00ffb3; }
+
+  .modal-btn-row { display: flex; gap: 10px; margin-top: 8px; }
+
+  .modal-btn-secondary {
+    flex: 1;
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 13px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .modal-btn-secondary:hover { border-color: var(--accent2); color: var(--accent2); }
+  .modal-btn.flex2 { flex: 2; margin-top: 0; }
+
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 30px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface2);
+    margin-bottom: 14px;
+  }
+
+  .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); background: rgba(0,229,160,0.04); }
+  .drop-zone-icon { font-size: 28px; margin-bottom: 10px; opacity: 0.6; }
+  .drop-zone-text { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .drop-zone-sub { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+  .drop-zone-sub span { color: var(--accent); text-decoration: underline; }
+
+  .mapper-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .mapper-row { display: flex; flex-direction: column; gap: 4px; }
+  .mapper-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .req { color: var(--accent); }
+
+  .mapper-select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    outline: none;
+    cursor: pointer;
+    width: 100%;
+    transition: border 0.2s;
+  }
+
+  .mapper-select:focus { border-color: var(--accent2); }
+
+  .preview-table-wrap {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    max-height: 140px;
+    overflow-y: auto;
+  }
+
+  .preview-table { width: 100%; border-collapse: collapse; font-family: 'DM Mono', monospace; font-size: 11px; }
+  .preview-table th { background: var(--border); padding: 7px 11px; text-align: left; color: var(--muted); white-space: nowrap; position: sticky; top: 0; }
+  .preview-table td { padding: 6px 11px; border-top: 1px solid rgba(42,42,61,0.5); color: var(--text); white-space: nowrap; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+
+  .import-meta { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); margin-bottom: 12px; }
+  .import-meta strong { color: var(--accent); }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 32px;
+    color: var(--muted);
+    gap: 12px;
+  }
+
+  .empty-state-icon { font-size: 36px; opacity: 0.4; }
+  .empty-state-text { font-family: 'DM Mono', monospace; font-size: 13px; text-align: center; line-height: 1.7; }
+
+  .loading-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 24px 32px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .no-results { padding: 40px 32px; text-align: center; font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted); }
+
+  @media (max-width: 768px) {
+    main { grid-template-columns: 1fr; }
+    .right-panel { display: none; }
+    header { padding: 12px 16px; }
+    .stat-item { padding: 10px 14px; }
+    .stat-value { font-size: 22px; }
+    .search-area { padding: 14px 16px; }
+    .attendee-row { padding: 11px 16px; }
+    .progress-bar-wrap { padding: 12px 16px; }
+    .room-badge { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Setup Modal -->
+  <div class="modal-overlay" id="setupModal">
+    <div class="modal">
+      <div class="modal-title">Welcome to EventIn</div>
+      <div class="modal-sub">// configure your event to begin</div>
+      <div class="modal-field">
+        <label class="modal-label">Event Name</label>
+        <input class="modal-input" id="eventNameInput" placeholder="e.g. Executive Leadership Forum 2026" />
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Date</label>
+        <input class="modal-input" type="date" id="eventDateInput" />
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Location / Venue</label>
+        <input class="modal-input" id="eventLocInput" placeholder="e.g. Nicollet Island Inn, Minneapolis" />
+      </div>
+      <button class="modal-btn" onclick="startEvent()">Launch Check-In Console →</button>
+    </div>
+  </div>
+
+  <!-- CSV Import Modal -->
+  <div class="modal-overlay" id="importModal" style="display:none;">
+    <div class="modal wide">
+      <div class="modal-title">Import Attendees</div>
+      <div class="modal-sub">// upload your Excel / CSV export</div>
+      <div id="importStep1">
+        <div class="drop-zone" id="dropZone"
+          ondragover="event.preventDefault();this.classList.add('dragover')"
+          ondragleave="this.classList.remove('dragover')"
+          ondrop="handleDrop(event)"
+          onclick="document.getElementById('csvFileInput').click()">
+          <div class="drop-zone-icon">⬆</div>
+          <div class="drop-zone-text">Drop your CSV or Excel file here</div>
+          <div class="drop-zone-sub">or <span>browse to upload</span> &nbsp;·&nbsp; .csv .xlsx .xls</div>
+        </div>
+        <input type="file" id="csvFileInput" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFileSelect(event)" />
+        <div class="modal-btn-row">
+          <button class="modal-btn-secondary" onclick="hideImport()">Cancel</button>
+          <button class="modal-btn flex2" onclick="loadSampleData()" style="margin-top:0;">Use Sample Data Instead</button>
+        </div>
+      </div>
+      <div id="importStep2" style="display:none;">
+        <div class="import-meta" id="importMeta"></div>
+        <span class="modal-label" style="display:block;margin-bottom:10px;">Map your columns to fields</span>
+        <div class="mapper-grid">
+          <div class="mapper-row">
+            <span class="mapper-label">Name <span class="req">*</span></span>
+            <select class="mapper-select" id="mapName"></select>
+          </div>
+          <div class="mapper-row">
+            <span class="mapper-label">Company / Title</span>
+            <select class="mapper-select" id="mapCompany"></select>
+          </div>
+          <div class="mapper-row">
+            <span class="mapper-label">Email</span>
+            <select class="mapper-select" id="mapEmail"></select>
+          </div>
+          <div class="mapper-row">
+            <span class="mapper-label">Ticket Type</span>
+            <select class="mapper-select" id="mapType"></select>
+          </div>
+          <div class="mapper-row" style="grid-column:1/-1;">
+            <span class="mapper-label">Start Room</span>
+            <select class="mapper-select" id="mapRoom"></select>
+          </div>
+        </div>
+        <span class="modal-label" style="display:block;margin-bottom:8px;">Preview (first 3 rows)</span>
+        <div class="preview-table-wrap">
+          <table class="preview-table" id="previewTable"></table>
+        </div>
+        <div class="modal-btn-row">
+          <button class="modal-btn-secondary" onclick="resetImport()">← Back</button>
+          <button class="modal-btn flex2" onclick="commitImport()" style="margin-top:0;">Import to Database →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="logo"><div class="logo-dot"></div>EventIn</div>
+    <div class="header-right">
+      <div class="sync-indicator">
+        <div class="sync-dot" id="syncDot"></div>
+        <span id="syncLabel">waiting...</span>
+      </div>
+      <div class="event-badge">✦ <span id="headerEventName">—</span> &nbsp;·&nbsp; <span id="headerEventDate">—</span></div>
+      <button class="header-btn import-btn" onclick="showImport()">↑ Import CSV</button>
+      <button class="header-btn" onclick="exportCSV()">↓ Export CSV</button>
+    </div>
+  </header>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-label">Total Registered</span>
+      <span class="stat-value" id="statTotal">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Checked In</span>
+      <span class="stat-value green" id="statChecked">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Remaining</span>
+      <span class="stat-value red" id="statRemaining">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Attendance Rate</span>
+      <span class="stat-value purple" id="statRate">0%</span>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-bar-wrap">
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="progress-label" id="progressLabel">0 / 0 checked in</div>
+  </div>
+
+  <!-- Main -->
+  <main>
+    <div class="left-panel">
+      <div class="search-area">
+        <span class="search-label">// find attendee</span>
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input class="search-input" id="searchInput" placeholder="Search by name, company, room, or type..." oninput="renderList()" />
+          <button class="filter-btn" id="filterBtn" onclick="toggleFilter()">⬤ Show all</button>
+        </div>
+      </div>
+      <div class="attendee-list" id="attendeeList">
+        <div class="loading-row"><div class="spinner"></div>Waiting for event setup...</div>
+      </div>
+    </div>
+
+    <div class="right-panel">
+      <div class="panel-header">
+        <span><span class="live-dot"></span>Live Activity</span>
+        <span id="activityCount">0 events</span>
+      </div>
+      <div class="activity-feed" id="activityFeed">
+        <div class="empty-state">
+          <div class="empty-state-icon">◎</div>
+          <div class="empty-state-text">Check-ins appear here<br>in real time across all devices</div>
+        </div>
+      </div>
+      <div class="add-section">
+        <div class="add-section-title">// register walk-in</div>
+        <div class="add-form">
+          <input class="add-input" id="walkName" placeholder="Full Name *" />
+          <input class="add-input" id="walkCompany" placeholder="Company / Title" />
+          <input class="add-input" id="walkRoom" placeholder="Start Room" />
+          <div class="add-row">
+            <select class="add-select" id="walkType">
+              <option value="general">General</option>
+              <option value="vip">VIP</option>
+              <option value="speaker">Speaker</option>
+              <option value="staff">Staff</option>
+            </select>
+            <button class="add-btn" onclick="addWalkin()">+ Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast">
+  <span id="toastIcon">✓</span>
+  <span id="toastMsg"></span>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+  // ── Supabase config ──────────────────────────────────────────────
+  const SUPABASE_URL = 'https://whvtsoyqgbefbztvtlta.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndodnRzb3lxZ2JlZmJ6dHZ0bHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyNzQxNTgsImV4cCI6MjA4ODg1MDE1OH0.M64gY67QgxNvZ3vD0HGcHQHGhAb9m0Nzqtrzmg3SCLw';
+  const TABLE = 'attendees';
+
+  const BASE_HEADERS = {
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_KEY,
+    'Prefer': 'return=representation'
+  };
+
+  async function sbFetch(path, options) {
+    options = options || {};
+    const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
+      headers: Object.assign({}, BASE_HEADERS, options.headers || {}),
+      method: options.method || 'GET',
+      body: options.body || undefined
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.status === 204 ? null : res.json();
+  }
+
+  // ── State ────────────────────────────────────────────────────────
+  var attendees = [];
+  var activity = [];
+  var filterUnchecked = false;
+  var eventName = '';
+  var parsedCSVHeaders = [];
+  var parsedCSVRows = [];
+
+  var avatarColors = [
+    ['#7c6ff7','#fff'],['#00e5a0','#000'],['#ff6b6b','#fff'],
+    ['#ffc107','#000'],['#4ecdc4','#000'],['#a855f7','#fff'],
+    ['#f97316','#fff'],['#06b6d4','#000']
+  ];
+
+  function getColor(n) {
+    var h = 0;
+    for (var i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) & 0xff;
+    return avatarColors[h % avatarColors.length];
+  }
+
+  function initials(n) {
+    return n.split(' ').map(function(w){ return w[0] ? w[0].toUpperCase() : ''; }).slice(0,2).join('');
+  }
+
+  function timeNow() {
+    return new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit', hour12:true});
+  }
+
+  function setSyncStatus(status) {
+    var dot = document.getElementById('syncDot');
+    var label = document.getElementById('syncLabel');
+    if (status === 'live') { dot.className = 'sync-dot live'; label.textContent = 'live sync'; }
+    else if (status === 'error') { dot.className = 'sync-dot error'; label.textContent = 'offline'; }
+    else { dot.className = 'sync-dot'; label.textContent = 'connecting...'; }
+  }
+
+  // ── Event setup ──────────────────────────────────────────────────
+  function startEvent() {
+    var nm = document.getElementById('eventNameInput').value.trim();
+    if (!nm) { document.getElementById('eventNameInput').style.borderColor = 'var(--warn)'; return; }
+    var dt = document.getElementById('eventDateInput').value;
+    eventName = nm;
+    var displayDate = dt ? new Date(dt + 'T12:00:00').toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) : 'Today';
+    document.getElementById('headerEventName').textContent = nm;
+    document.getElementById('headerEventDate').textContent = displayDate;
+    document.getElementById('setupModal').style.display = 'none';
+    loadAttendees();
+    subscribeRealtime();
+  }
+
+  // ── Load from Supabase ───────────────────────────────────────────
+  function loadAttendees() {
+    document.getElementById('attendeeList').innerHTML =
+      '<div class="loading-row"><div class="spinner"></div>Loading attendees...</div>';
+    setSyncStatus('connecting');
+    sbFetch(TABLE + '?event_name=eq.' + encodeURIComponent(eventName) + '&order=name.asc')
+      .then(function(data) {
+        attendees = data || [];
+        setSyncStatus('live');
+        updateStats();
+        renderList();
+      })
+      .catch(function() {
+        setSyncStatus('error');
+        showToast('!', 'Could not connect to database');
+        document.getElementById('attendeeList').innerHTML =
+          '<div class="empty-state"><div class="empty-state-icon">⚠</div><div class="empty-state-text">Database connection failed.<br>Check your network and refresh.</div></div>';
+      });
+  }
+
+  // ── Realtime via WebSocket ───────────────────────────────────────
+  function subscribeRealtime() {
+    var wsUrl = SUPABASE_URL.replace('https://', 'wss://') +
+      '/realtime/v1/websocket?apikey=' + SUPABASE_KEY + '&vsn=1.0.0';
+    var ws = new WebSocket(wsUrl);
+    var hb;
+
+    ws.onopen = function() {
+      ws.send(JSON.stringify({
+        topic: 'realtime:public:' + TABLE,
+        event: 'phx_join',
+        payload: { config: { postgres_changes: [{ event: '*', schema: 'public', table: TABLE }] } },
+        ref: '1'
+      }));
+      hb = setInterval(function() {
+        if (ws.readyState === WebSocket.OPEN)
+          ws.send(JSON.stringify({topic:'phoenix',event:'heartbeat',payload:{},ref:null}));
+      }, 25000);
+    };
+
+    ws.onmessage = function(msg) {
+      var data = JSON.parse(msg.data);
+      // Any postgres change = reload from DB to stay in sync
+      if (data.event === 'postgres_changes' ||
+          (data.payload && data.payload.data && data.payload.data.type)) {
+        sbFetch(TABLE + '?event_name=eq.' + encodeURIComponent(eventName) + '&order=name.asc')
+          .then(function(fresh) {
+            attendees = fresh || [];
+            updateStats();
+            renderList();
+          }).catch(function(){});
+      }
+      if (data.event === 'phx_reply' && data.payload && data.payload.status === 'ok') {
+        setSyncStatus('live');
+      }
+    };
+
+    ws.onerror = function() { setSyncStatus('error'); };
+    ws.onclose = function() {
+      clearInterval(hb);
+      setSyncStatus('error');
+      setTimeout(subscribeRealtime, 3000);
+    };
+  }
+
+  // ── Toggle check-in ──────────────────────────────────────────────
+  function toggleCheckin(id) {
+    var att = attendees.find(function(a){ return a.id === id; });
+    if (!att) return;
+
+    var newState = !att.checked_in;
+    var newTime = newState ? timeNow() : null;
+
+    // Optimistic update
+    att.checked_in = newState;
+    att.checked_in_time = newTime;
+    updateStats();
+    renderList();
+
+    if (newState) {
+      activity.unshift({name:att.name, company:att.company, room:att.room, time:newTime});
+      showToast('✓', att.name + ' checked in');
+    } else {
+      activity = activity.filter(function(x){ return x.name !== att.name; });
+      showToast('○', att.name + ' removed');
+    }
+    renderActivity();
+
+    sbFetch(TABLE + '?id=eq.' + id, {
+      method: 'PATCH',
+      body: JSON.stringify({checked_in: newState, checked_in_time: newTime})
+    }).catch(function() {
+      // Revert on failure
+      att.checked_in = !newState;
+      att.checked_in_time = newState ? null : newTime;
+      updateStats();
+      renderList();
+      showToast('!', 'Sync failed — check connection');
+    });
+  }
+
+  // ── Render list ──────────────────────────────────────────────────
+  function renderList() {
+    var q = document.getElementById('searchInput').value.toLowerCase();
+    var list = document.getElementById('attendeeList');
+    var tagMap = {vip:'tag-vip',speaker:'tag-speaker',staff:'tag-staff',general:'tag-general'};
+
+    if (attendees.length === 0) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⬆</div><div class="empty-state-text">No attendees yet.<br>Import a CSV or add a walk-in.</div></div>';
+      return;
+    }
+
+    var filtered = attendees.filter(function(a) {
+      var fields = [a.name, a.company, a.email, a.type, a.room];
+      var matchQ = !q || fields.some(function(f){ return (f||'').toLowerCase().includes(q); });
+      var matchF = !filterUnchecked || !a.checked_in;
+      return matchQ && matchF;
+    });
+
+    if (filtered.length === 0) {
+      list.innerHTML = '<div class="no-results">No attendees match your search.</div>';
+      return;
+    }
+
+    list.innerHTML = filtered.map(function(a) {
+      var colors = getColor(a.name);
+      var bg = colors[0], fg = colors[1];
+      var typeKey = a.type || 'general';
+      var tagClass = tagMap[typeKey] || 'tag-general';
+      return '<div class="attendee-row ' + (a.checked_in ? 'checked-in' : '') + '" onclick="toggleCheckin(' + a.id + ')">' +
+        '<div class="avatar ' + (a.checked_in ? 'checked' : '') + '" style="background:' + bg + ';color:' + fg + '">' + initials(a.name) + '</div>' +
+        '<div class="attendee-info">' +
+          '<div class="attendee-name ' + (a.checked_in ? 'struck' : '') + '">' + a.name + '</div>' +
+          '<div class="attendee-meta">' + (a.company || '') + (a.email ? ' · ' + a.email : '') + '</div>' +
+        '</div>' +
+        '<div class="attendee-right">' +
+          (a.room ? '<span class="room-badge">⬡ ' + a.room + '</span>' : '') +
+          '<span class="tag ' + tagClass + '">' + typeKey.toUpperCase() + '</span>' +
+          (a.checked_in ? '<span class="checkin-time">' + (a.checked_in_time || '') + '</span>' : '') +
+          '<button class="check-btn ' + (a.checked_in ? 'done' : '') + '" onclick="event.stopPropagation();toggleCheckin(' + a.id + ')">' +
+            (a.checked_in ? '✓' : '○') +
+          '</button>' +
+        '</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  function renderActivity() {
+    var feed = document.getElementById('activityFeed');
+    document.getElementById('activityCount').textContent = activity.length + ' event' + (activity.length !== 1 ? 's' : '');
+    if (activity.length === 0) {
+      feed.innerHTML = '<div class="empty-state"><div class="empty-state-icon">◎</div><div class="empty-state-text">Check-ins appear here<br>in real time across all devices</div></div>';
+      return;
+    }
+    feed.innerHTML = activity.map(function(a) {
+      return '<div class="activity-item">' +
+        '<div class="activity-name">' + a.name + '</div>' +
+        '<div class="activity-meta"><span>' + (a.room ? '⬡ ' + a.room : (a.company || '')) + '</span>' +
+        '<span class="activity-time">' + a.time + '</span></div></div>';
+    }).join('');
+  }
+
+  function updateStats() {
+    var total = attendees.length;
+    var checked = attendees.filter(function(a){ return a.checked_in; }).length;
+    var remaining = total - checked;
+    var rate = total > 0 ? Math.round((checked / total) * 100) : 0;
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statChecked').textContent = checked;
+    document.getElementById('statRemaining').textContent = remaining;
+    document.getElementById('statRate').textContent = rate + '%';
+    document.getElementById('progressFill').style.width = rate + '%';
+    document.getElementById('progressLabel').textContent = checked + ' / ' + total + ' checked in';
+  }
+
+  function toggleFilter() {
+    filterUnchecked = !filterUnchecked;
+    var btn = document.getElementById('filterBtn');
+    btn.textContent = filterUnchecked ? '◎ Unchecked only' : '⬤ Show all';
+    btn.classList.toggle('active', filterUnchecked);
+    renderList();
+  }
+
+  // ── Walk-in ──────────────────────────────────────────────────────
+  function addWalkin() {
+    var name = document.getElementById('walkName').value.trim();
+    if (!name) { document.getElementById('walkName').style.borderColor = 'var(--warn)'; return; }
+    var company = document.getElementById('walkCompany').value.trim() || 'Walk-in';
+    var room = document.getElementById('walkRoom').value.trim();
+    var type = document.getElementById('walkType').value;
+
+    sbFetch(TABLE, {
+      method: 'POST',
+      body: JSON.stringify({name:name, company:company, email:'', type:type, room:room,
+        checked_in:false, checked_in_time:null, event_name:eventName})
+    }).then(function(created) {
+      attendees.unshift(created[0]);
+      document.getElementById('walkName').value = '';
+      document.getElementById('walkCompany').value = '';
+      document.getElementById('walkRoom').value = '';
+      document.getElementById('walkType').value = 'general';
+      document.getElementById('walkName').style.borderColor = '';
+      showToast('＋', name + ' added');
+      updateStats();
+      renderList();
+    }).catch(function() { showToast('!', 'Could not add attendee'); });
+  }
+
+  // ── CSV Import ───────────────────────────────────────────────────
+  function showImport() { document.getElementById('importModal').style.display = 'flex'; }
+  function hideImport() { document.getElementById('importModal').style.display = 'none'; }
+
+  function resetImport() {
+    document.getElementById('importStep1').style.display = 'block';
+    document.getElementById('importStep2').style.display = 'none';
+    document.getElementById('csvFileInput').value = '';
+    parsedCSVHeaders = []; parsedCSVRows = [];
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('dropZone').classList.remove('dragover');
+    if (e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]);
+  }
+
+  function handleFileSelect(e) {
+    if (e.target.files[0]) processFile(e.target.files[0]);
+  }
+
+  function processFile(file) {
+    var nm = file.name.toLowerCase();
+    if (nm.endsWith('.csv')) {
+      var reader = new FileReader();
+      reader.onload = function(e) { parseCSVText(e.target.result); };
+      reader.readAsText(file);
+    } else if (nm.endsWith('.xlsx') || nm.endsWith('.xls')) {
+      var reader2 = new FileReader();
+      reader2.onload = function(e) {
+        var wb = XLSX.read(e.target.result, {type:'array'});
+        var ws = wb.Sheets[wb.SheetNames[0]];
+        parseCSVText(XLSX.utils.sheet_to_csv(ws));
+      };
+      reader2.readAsArrayBuffer(file);
+    } else {
+      showToast('!', 'Please upload a .csv, .xlsx, or .xls file');
+    }
+  }
+
+  function parseLine(line) {
+    var result = [], current = '', inQuotes = false;
+    for (var i = 0; i < line.length; i++) {
+      var ch = line[i];
+      if (ch === '"') inQuotes = !inQuotes;
+      else if (ch === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
+      else current += ch;
+    }
+    result.push(current.trim());
+    return result;
+  }
+
+  function parseCSVText(text) {
+    var lines = text.trim().split('\n').filter(function(l){ return l.trim(); });
+    if (lines.length < 2) { showToast('!', 'File appears empty'); return; }
+    parsedCSVHeaders = parseLine(lines[0]);
+    parsedCSVRows = lines.slice(1).map(parseLine);
+    document.getElementById('importMeta').innerHTML =
+      '<strong>' + parsedCSVRows.length + '</strong> rows detected &nbsp;·&nbsp; <strong>' + parsedCSVHeaders.length + '</strong> columns';
+    buildMapper(); buildPreview();
+    document.getElementById('importStep1').style.display = 'none';
+    document.getElementById('importStep2').style.display = 'block';
+  }
+
+  function buildMapper() {
+    var autoMatch = {
+      mapName: ['name','full name','attendee','guest'],
+      mapCompany: ['company','org','organization','employer','title','firm'],
+      mapEmail: ['email','e-mail','mail'],
+      mapType: ['type','ticket','tier','vip','category','registration'],
+      mapRoom: ['room','start room','session','track','table','location']
+    };
+    ['mapName','mapCompany','mapEmail','mapType','mapRoom'].forEach(function(id) {
+      var sel = document.getElementById(id);
+      sel.innerHTML = ['— skip —'].concat(parsedCSVHeaders).map(function(h,i){
+        return '<option value="' + (i===0?'':h) + '">' + h + '</option>';
+      }).join('');
+      var kws = autoMatch[id] || [];
+      for (var k = 0; k < kws.length; k++) {
+        var match = parsedCSVHeaders.find(function(h){ return h.toLowerCase().includes(kws[k]); });
+        if (match) { sel.value = match; break; }
+      }
+    });
+  }
+
+  function buildPreview() {
+    var preview = parsedCSVRows.slice(0,3);
+    document.getElementById('previewTable').innerHTML =
+      '<thead><tr>' + parsedCSVHeaders.map(function(h){ return '<th>' + h + '</th>'; }).join('') + '</tr></thead>' +
+      '<tbody>' + preview.map(function(row){
+        return '<tr>' + row.map(function(cell){ return '<td>' + (cell||'—') + '</td>'; }).join('') + '</tr>';
+      }).join('') + '</tbody>';
+  }
+
+  function commitImport() {
+    var mapName = document.getElementById('mapName').value;
+    if (!mapName) { showToast('!', 'Name column is required'); return; }
+    var mapCompany = document.getElementById('mapCompany').value;
+    var mapEmail = document.getElementById('mapEmail').value;
+    var mapType = document.getElementById('mapType').value;
+    var mapRoom = document.getElementById('mapRoom').value;
+
+    function normalizeType(val) {
+      if (!val) return 'general';
+      var v = val.toLowerCase();
+      if (v.includes('vip')||v.includes('executive')||v.includes('premium')) return 'vip';
+      if (v.includes('speak')) return 'speaker';
+      if (v.includes('staff')||v.includes('crew')) return 'staff';
+      return 'general';
+    }
+
+    function getCol(row, col) {
+      if (!col) return '';
+      var idx = parsedCSVHeaders.indexOf(col);
+      return idx >= 0 ? (row[idx]||'').trim() : '';
+    }
+
+    var rows = parsedCSVRows
+      .filter(function(row){ return getCol(row, mapName); })
+      .map(function(row) {
+        return {
+          name: getCol(row, mapName),
+          company: getCol(row, mapCompany) || '—',
+          email: getCol(row, mapEmail),
+          type: normalizeType(getCol(row, mapType)),
+          room: getCol(row, mapRoom),
+          checked_in: false,
+          checked_in_time: null,
+          event_name: eventName
+        };
+      });
+
+    if (rows.length === 0) { showToast('!', 'No valid rows found'); return; }
+
+    // Insert in batches of 100
+    var batches = [];
+    for (var i = 0; i < rows.length; i += 100) batches.push(rows.slice(i, i+100));
+
+    Promise.all(batches.map(function(batch) {
+      return sbFetch(TABLE, {method:'POST', body:JSON.stringify(batch)});
+    })).then(function() {
+      hideImport(); resetImport();
+      loadAttendees();
+      showToast('✓', rows.length + ' attendees imported');
+    }).catch(function() {
+      showToast('!', 'Import failed — check connection');
+    });
+  }
+
+  function loadSampleData() {
+    var sample = [
+      {name:'Sarah Okonkwo', company:'Accenture · CMO', email:'s.okonkwo@accenture.com', type:'vip', room:'Boardroom A'},
+      {name:'James Theriault', company:'Target Corp · CTO', email:'j.theriault@target.com', type:'vip', room:'Boardroom A'},
+      {name:'Michelle Park', company:'3M · VP Marketing', email:'m.park@3m.com', type:'general', room:'Main Hall'},
+      {name:'David Nguyen', company:'Slalom · Director', email:'d.nguyen@slalom.com', type:'speaker', room:'Stage'},
+      {name:'Priya Sharma', company:'Best Buy · CIO', email:'p.sharma@bestbuy.com', type:'speaker', room:'Stage'},
+      {name:'Carlos Reyes', company:'UnitedHealth · CFO', email:'c.reyes@uhg.com', type:'vip', room:'Boardroom A'},
+      {name:'Anna Lindqvist', company:'General Mills · EVP', email:'a.lindqvist@generalmills.com', type:'general', room:'Main Hall'},
+      {name:'Fatima Al-Hassan', company:'Mayo Clinic · CMO', email:'f.alhassan@mayo.edu', type:'vip', room:'Boardroom B'},
+      {name:'Ingrid Sorenson', company:'Allianz · EVP', email:'i.sorenson@allianz.com', type:'speaker', room:'Stage'},
+      {name:'Brianna Foster', company:'Slalom · Event Staff', email:'b.foster@slalom.com', type:'staff', room:'Registration'}
+    ].map(function(a){ return Object.assign({}, a, {checked_in:false, checked_in_time:null, event_name:eventName}); });
+
+    sbFetch(TABLE, {method:'POST', body:JSON.stringify(sample)})
+      .then(function() { hideImport(); loadAttendees(); showToast('✓', sample.length + ' sample attendees loaded'); })
+      .catch(function() { showToast('!', 'Could not load sample data'); });
+  }
+
+  // ── Export ───────────────────────────────────────────────────────
+  function exportCSV() {
+    if (attendees.length === 0) { showToast('!', 'No data to export'); return; }
+    var header = 'Name,Company,Email,Type,Start Room,Checked In,Check-In Time\n';
+    var rows = attendees.map(function(a) {
+      return '"' + (a.name||'') + '","' + (a.company||'') + '","' + (a.email||'') + '","' +
+        (a.type||'') + '","' + (a.room||'') + '","' + (a.checked_in?'Yes':'No') + '","' + (a.checked_in_time||'') + '"';
+    }).join('\n');
+    var blob = new Blob([header + rows], {type:'text/csv'});
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement('a');
+    link.href = url; link.download = (eventName||'event') + '-checkin.csv';
+    link.click(); URL.revokeObjectURL(url);
+    showToast('↓', 'CSV exported');
+  }
+
+  // ── Toast ────────────────────────────────────────────────────────
+  function showToast(icon, msg) {
+    var toast = document.getElementById('toast');
+    document.getElementById('toastIcon').textContent = icon;
+    document.getElementById('toastMsg').textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function(){ toast.classList.remove('show'); }, 2800);
+  }
+
+  // ── Init ─────────────────────────────────────────────────────────
+  document.getElementById('eventDateInput').valueAsDate = new Date();
+</script>
+</body>
+</html>
