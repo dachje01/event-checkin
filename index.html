@@ -3,25 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EventIn — Check-In Console</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<title>Arivo — Check-In Console</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0a0f;
-    --surface: #12121a;
-    --surface2: #1a1a26;
-    --border: #2a2a3d;
-    --accent: #00e5a0;
-    --accent2: #7c6ff7;
-    --warn: #ff6b6b;
-    --text: #e8e8f0;
-    --muted: #6b6b8a;
+    --bg:       #151515;
+    --surface:  #1e1e1e;
+    --surface2: #272727;
+    --border:   #333333;
+    --blue:     #0C62FB;   /* Slalom Electric Blue  */
+    --chart:    #CCFF33;   /* Slalom Chartreuse     */
+    --purple:   #C7B9FF;   /* Slalom Purple         */
+    --coral:    #FF4D5F;   /* Slalom Coral          */
+    --teal:     #1BE1F2;   /* Slalom Teal           */
+    --text:     #F0F0F0;
+    --muted:    #707070;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    font-family: 'Syne', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
@@ -33,8 +35,8 @@
     position: fixed;
     inset: 0;
     background-image:
-      linear-gradient(rgba(0,229,160,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,229,160,0.03) 1px, transparent 1px);
+      linear-gradient(rgba(12,98,251,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(12,98,251,0.04) 1px, transparent 1px);
     background-size: 40px 40px;
     pointer-events: none;
     z-index: 0;
@@ -42,13 +44,14 @@
 
   .app { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100vh; }
 
+  /* ── Header ── */
   header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 18px 32px;
     border-bottom: 1px solid var(--border);
-    background: rgba(10,10,15,0.95);
+    background: rgba(21,21,21,0.96);
     backdrop-filter: blur(12px);
     position: sticky;
     top: 0;
@@ -69,14 +72,14 @@
   .logo-dot {
     width: 10px; height: 10px;
     border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 12px var(--accent);
+    background: var(--blue);
+    box-shadow: 0 0 14px var(--blue);
     animation: pulse 2s ease-in-out infinite;
   }
 
   @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.6; transform: scale(0.8); }
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.55; transform:scale(0.8); }
   }
 
   .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -93,7 +96,7 @@
     gap: 6px;
   }
 
-  .event-badge span { color: var(--text); font-weight: 500; }
+  .event-badge span { color: var(--text); font-weight: 600; }
 
   .sync-indicator {
     display: flex;
@@ -115,8 +118,8 @@
     flex-shrink: 0;
   }
 
-  .sync-dot.live { background: var(--accent); box-shadow: 0 0 8px var(--accent); animation: pulse 1.5s ease-in-out infinite; }
-  .sync-dot.error { background: var(--warn); }
+  .sync-dot.live  { background: var(--chart); box-shadow: 0 0 8px var(--chart); animation: pulse 1.5s ease-in-out infinite; }
+  .sync-dot.error { background: var(--coral); }
 
   .header-btn {
     background: transparent;
@@ -131,9 +134,10 @@
     white-space: nowrap;
   }
 
-  .header-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .header-btn.import-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+  .header-btn:hover       { border-color: var(--chart); color: var(--chart); }
+  .header-btn.import-btn:hover { border-color: var(--blue); color: var(--blue); }
 
+  /* ── Stats ── */
   .stats-bar {
     display: flex;
     gap: 1px;
@@ -165,10 +169,13 @@
     letter-spacing: -1px;
   }
 
-  .green { color: var(--accent); }
-  .purple { color: var(--accent2); }
-  .red { color: var(--warn); }
+  .c-blue   { color: var(--blue); }
+  .c-chart  { color: var(--chart); }
+  .c-coral  { color: var(--coral); }
+  .c-purple { color: var(--purple); }
+  .c-teal   { color: var(--teal); }
 
+  /* ── Progress ── */
   .progress-bar-wrap {
     padding: 14px 32px;
     background: var(--surface);
@@ -188,7 +195,7 @@
 
   .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    background: linear-gradient(90deg, var(--blue), var(--teal));
     border-radius: 2px;
     transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
@@ -200,6 +207,7 @@
     white-space: nowrap;
   }
 
+  /* ── Main layout ── */
   main {
     display: grid;
     grid-template-columns: 1fr 320px;
@@ -209,6 +217,7 @@
 
   .left-panel { border-right: 1px solid var(--border); display: flex; flex-direction: column; }
 
+  /* ── Search ── */
   .search-area {
     padding: 20px 32px;
     border-bottom: 1px solid var(--border);
@@ -234,13 +243,13 @@
     border-radius: 10px;
     padding: 13px 18px 13px 44px;
     color: var(--text);
-    font-family: 'Syne', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 15px;
     outline: none;
     transition: all 0.2s;
   }
 
-  .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,229,160,0.08); }
+  .search-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(12,98,251,0.12); }
   .search-input::placeholder { color: var(--muted); }
 
   .search-icon {
@@ -266,8 +275,9 @@
     transition: all 0.2s;
   }
 
-  .filter-btn.active, .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-btn.active, .filter-btn:hover { border-color: var(--blue); color: var(--blue); }
 
+  /* ── Attendee list ── */
   .attendee-list {
     flex: 1;
     overflow-y: auto;
@@ -279,15 +289,15 @@
     display: flex;
     align-items: center;
     padding: 13px 32px;
-    border-bottom: 1px solid rgba(42,42,61,0.5);
+    border-bottom: 1px solid rgba(51,51,51,0.6);
     cursor: pointer;
     transition: background 0.15s;
     gap: 14px;
   }
 
-  .attendee-row:hover { background: var(--surface2); }
-  .attendee-row.checked-in { background: rgba(0,229,160,0.04); }
-  .attendee-row.checked-in:hover { background: rgba(0,229,160,0.07); }
+  .attendee-row:hover       { background: var(--surface2); }
+  .attendee-row.checked-in  { background: rgba(12,98,251,0.06); }
+  .attendee-row.checked-in:hover { background: rgba(12,98,251,0.1); }
 
   .avatar {
     width: 38px; height: 38px;
@@ -305,7 +315,7 @@
     content: '✓';
     position: absolute;
     inset: 0;
-    background: rgba(0,229,160,0.92);
+    background: var(--chart);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -339,31 +349,33 @@
 
   .attendee-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
+  /* Time slot tags */
   .tag {
     font-family: 'DM Mono', monospace;
     font-size: 10px;
     padding: 3px 8px;
     border-radius: 4px;
     letter-spacing: 0.05em;
+    white-space: nowrap;
   }
 
-  .tag-vip { background: rgba(124,111,247,0.15); color: var(--accent2); border: 1px solid rgba(124,111,247,0.3); }
-  .tag-speaker { background: rgba(255,193,7,0.1); color: #ffc107; border: 1px solid rgba(255,193,7,0.3); }
-  .tag-staff { background: rgba(255,107,107,0.1); color: var(--warn); border: 1px solid rgba(255,107,107,0.3); }
-  .tag-general { background: rgba(107,107,138,0.1); color: var(--muted); border: 1px solid var(--border); }
+  .tag-morning  { background: rgba(204,255,51,0.12); color: var(--chart);  border: 1px solid rgba(204,255,51,0.3); }
+  .tag-midday   { background: rgba(12,98,251,0.14);  color: #6fa8fc;       border: 1px solid rgba(12,98,251,0.35); }
+  .tag-afternoon{ background: rgba(199,185,255,0.14);color: var(--purple); border: 1px solid rgba(199,185,255,0.3); }
+  .tag-unknown  { background: rgba(112,112,112,0.12);color: var(--muted);  border: 1px solid var(--border); }
 
   .room-badge {
     font-family: 'DM Mono', monospace;
     font-size: 10px;
     padding: 2px 7px;
     border-radius: 4px;
-    background: rgba(6,182,212,0.12);
-    color: #06b6d4;
-    border: 1px solid rgba(6,182,212,0.25);
+    background: rgba(27,225,242,0.1);
+    color: var(--teal);
+    border: 1px solid rgba(27,225,242,0.25);
     white-space: nowrap;
   }
 
-  .checkin-time { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--accent); }
+  .checkin-time { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--chart); }
 
   .check-btn {
     width: 32px; height: 32px;
@@ -380,9 +392,10 @@
     flex-shrink: 0;
   }
 
-  .check-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,229,160,0.08); }
-  .check-btn.done { border-color: var(--accent); background: var(--accent); color: #000; }
+  .check-btn:hover { border-color: var(--chart); color: var(--chart); background: rgba(204,255,51,0.08); }
+  .check-btn.done  { border-color: var(--chart); background: var(--chart); color: #000; }
 
+  /* ── Right panel ── */
   .right-panel { background: var(--surface); display: flex; flex-direction: column; }
 
   .panel-header {
@@ -402,8 +415,8 @@
   .live-dot {
     width: 6px; height: 6px;
     border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 8px var(--accent);
+    background: var(--chart);
+    box-shadow: 0 0 8px var(--chart);
     animation: pulse 1.5s ease-in-out infinite;
     display: inline-block;
     margin-right: 6px;
@@ -419,13 +432,13 @@
 
   .activity-item {
     padding: 11px 20px;
-    border-bottom: 1px solid rgba(42,42,61,0.4);
+    border-bottom: 1px solid rgba(51,51,51,0.5);
     animation: slideIn 0.3s ease-out;
   }
 
   @keyframes slideIn {
-    from { opacity: 0; transform: translateX(10px); }
-    to { opacity: 1; transform: translateX(0); }
+    from { opacity:0; transform:translateX(10px); }
+    to   { opacity:1; transform:translateX(0); }
   }
 
   .activity-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
@@ -438,8 +451,9 @@
     justify-content: space-between;
   }
 
-  .activity-time { color: var(--accent); }
+  .activity-time { color: var(--chart); }
 
+  /* ── Walk-in form ── */
   .add-section { padding: 14px 20px; border-top: 1px solid var(--border); flex-shrink: 0; }
 
   .add-section-title {
@@ -459,14 +473,14 @@
     border-radius: 8px;
     padding: 9px 13px;
     color: var(--text);
-    font-family: 'Syne', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 13px;
     outline: none;
     transition: all 0.2s;
     width: 100%;
   }
 
-  .add-input:focus { border-color: var(--accent2); }
+  .add-input:focus { border-color: var(--blue); }
   .add-input::placeholder { color: var(--muted); font-size: 12px; }
 
   .add-row { display: flex; gap: 7px; }
@@ -486,12 +500,12 @@
   }
 
   .add-btn {
-    background: var(--accent);
-    color: #000;
+    background: var(--blue);
+    color: #fff;
     border: none;
     border-radius: 8px;
     padding: 9px 16px;
-    font-family: 'Syne', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
@@ -499,15 +513,16 @@
     white-space: nowrap;
   }
 
-  .add-btn:hover { background: #00ffb3; }
+  .add-btn:hover { background: #2a7aff; }
 
+  /* ── Toast ── */
   .toast {
     position: fixed;
     bottom: 28px;
     left: 50%;
     transform: translateX(-50%) translateY(20px);
     background: var(--surface2);
-    border: 1px solid var(--accent);
+    border: 1px solid var(--blue);
     border-radius: 12px;
     padding: 13px 22px;
     display: flex;
@@ -519,15 +534,16 @@
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     z-index: 1000;
     pointer-events: none;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
   }
 
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
+  /* ── Modals ── */
   .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.82);
+    background: rgba(0,0,0,0.85);
     backdrop-filter: blur(8px);
     z-index: 200;
     display: flex;
@@ -551,12 +567,12 @@
   .modal.wide { max-width: 560px; }
 
   @keyframes modalIn {
-    from { opacity: 0; transform: scale(0.92); }
-    to { opacity: 1; transform: scale(1); }
+    from { opacity:0; transform:scale(0.92); }
+    to   { opacity:1; transform:scale(1); }
   }
 
   .modal-title { font-size: 22px; font-weight: 800; margin-bottom: 5px; letter-spacing: -0.5px; }
-  .modal-sub { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); margin-bottom: 24px; }
+  .modal-sub   { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); margin-bottom: 24px; }
   .modal-field { margin-bottom: 14px; }
 
   .modal-label {
@@ -576,22 +592,22 @@
     border-radius: 10px;
     padding: 12px 15px;
     color: var(--text);
-    font-family: 'Syne', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 14px;
     outline: none;
     transition: all 0.2s;
   }
 
-  .modal-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,229,160,0.08); }
+  .modal-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(12,98,251,0.12); }
 
   .modal-btn {
     width: 100%;
-    background: var(--accent);
-    color: #000;
+    background: var(--blue);
+    color: #fff;
     border: none;
     border-radius: 10px;
     padding: 15px;
-    font-family: 'Syne', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 15px;
     font-weight: 800;
     cursor: pointer;
@@ -599,7 +615,7 @@
     transition: all 0.2s;
   }
 
-  .modal-btn:hover { background: #00ffb3; }
+  .modal-btn:hover { background: #2a7aff; }
 
   .modal-btn-row { display: flex; gap: 10px; margin-top: 8px; }
 
@@ -610,16 +626,17 @@
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 13px;
-    font-family: 'Syne', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
   }
 
-  .modal-btn-secondary:hover { border-color: var(--accent2); color: var(--accent2); }
+  .modal-btn-secondary:hover { border-color: var(--purple); color: var(--purple); }
   .modal-btn.flex2 { flex: 2; margin-top: 0; }
 
+  /* ── CSV Import ── */
   .drop-zone {
     border: 2px dashed var(--border);
     border-radius: 12px;
@@ -631,16 +648,16 @@
     margin-bottom: 14px;
   }
 
-  .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); background: rgba(0,229,160,0.04); }
+  .drop-zone:hover, .drop-zone.dragover { border-color: var(--blue); background: rgba(12,98,251,0.05); }
   .drop-zone-icon { font-size: 28px; margin-bottom: 10px; opacity: 0.6; }
   .drop-zone-text { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
-  .drop-zone-sub { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
-  .drop-zone-sub span { color: var(--accent); text-decoration: underline; }
+  .drop-zone-sub  { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+  .drop-zone-sub span { color: var(--teal); text-decoration: underline; }
 
   .mapper-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-  .mapper-row { display: flex; flex-direction: column; gap: 4px; }
+  .mapper-row  { display: flex; flex-direction: column; gap: 4px; }
   .mapper-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-  .req { color: var(--accent); }
+  .req { color: var(--chart); }
 
   .mapper-select {
     background: var(--surface2);
@@ -656,7 +673,7 @@
     transition: border 0.2s;
   }
 
-  .mapper-select:focus { border-color: var(--accent2); }
+  .mapper-select:focus { border-color: var(--blue); }
 
   .preview-table-wrap {
     background: var(--surface2);
@@ -670,11 +687,12 @@
 
   .preview-table { width: 100%; border-collapse: collapse; font-family: 'DM Mono', monospace; font-size: 11px; }
   .preview-table th { background: var(--border); padding: 7px 11px; text-align: left; color: var(--muted); white-space: nowrap; position: sticky; top: 0; }
-  .preview-table td { padding: 6px 11px; border-top: 1px solid rgba(42,42,61,0.5); color: var(--text); white-space: nowrap; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+  .preview-table td { padding: 6px 11px; border-top: 1px solid rgba(51,51,51,0.5); color: var(--text); white-space: nowrap; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
 
   .import-meta { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); margin-bottom: 12px; }
-  .import-meta strong { color: var(--accent); }
+  .import-meta strong { color: var(--chart); }
 
+  /* ── States ── */
   .empty-state {
     display: flex;
     flex-direction: column;
@@ -701,7 +719,7 @@
   .spinner {
     width: 16px; height: 16px;
     border: 2px solid var(--border);
-    border-top-color: var(--accent);
+    border-top-color: var(--blue);
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
     flex-shrink: 0;
@@ -711,6 +729,7 @@
 
   .no-results { padding: 40px 32px; text-align: center; font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted); }
 
+  /* ── Mobile ── */
   @media (max-width: 768px) {
     main { grid-template-columns: 1fr; }
     .right-panel { display: none; }
@@ -727,10 +746,10 @@
 <body>
 <div class="app">
 
-  <!-- Setup Modal -->
+  <!-- ── Setup Modal ── -->
   <div class="modal-overlay" id="setupModal">
     <div class="modal">
-      <div class="modal-title">Welcome to EventIn</div>
+      <div class="modal-title">Welcome to Arivo</div>
       <div class="modal-sub">// configure your event to begin</div>
       <div class="modal-field">
         <label class="modal-label">Event Name</label>
@@ -748,7 +767,7 @@
     </div>
   </div>
 
-  <!-- CSV Import Modal -->
+  <!-- ── CSV Import Modal ── -->
   <div class="modal-overlay" id="importModal" style="display:none;">
     <div class="modal wide">
       <div class="modal-title">Import Attendees</div>
@@ -778,18 +797,22 @@
             <select class="mapper-select" id="mapName"></select>
           </div>
           <div class="mapper-row">
-            <span class="mapper-label">Company / Title</span>
+            <span class="mapper-label">Company</span>
             <select class="mapper-select" id="mapCompany"></select>
+          </div>
+          <div class="mapper-row">
+            <span class="mapper-label">Title</span>
+            <select class="mapper-select" id="mapTitle"></select>
           </div>
           <div class="mapper-row">
             <span class="mapper-label">Email</span>
             <select class="mapper-select" id="mapEmail"></select>
           </div>
           <div class="mapper-row">
-            <span class="mapper-label">Ticket Type</span>
+            <span class="mapper-label">Time Slot</span>
             <select class="mapper-select" id="mapType"></select>
           </div>
-          <div class="mapper-row" style="grid-column:1/-1;">
+          <div class="mapper-row">
             <span class="mapper-label">Start Room</span>
             <select class="mapper-select" id="mapRoom"></select>
           </div>
@@ -806,9 +829,9 @@
     </div>
   </div>
 
-  <!-- Header -->
+  <!-- ── Header ── -->
   <header>
-    <div class="logo"><div class="logo-dot"></div>EventIn</div>
+    <div class="logo"><div class="logo-dot"></div>Arivo</div>
     <div class="header-right">
       <div class="sync-indicator">
         <div class="sync-dot" id="syncDot"></div>
@@ -820,7 +843,7 @@
     </div>
   </header>
 
-  <!-- Stats -->
+  <!-- ── Stats ── -->
   <div class="stats-bar">
     <div class="stat-item">
       <span class="stat-label">Total Registered</span>
@@ -828,32 +851,32 @@
     </div>
     <div class="stat-item">
       <span class="stat-label">Checked In</span>
-      <span class="stat-value green" id="statChecked">0</span>
+      <span class="stat-value c-chart" id="statChecked">0</span>
     </div>
     <div class="stat-item">
       <span class="stat-label">Remaining</span>
-      <span class="stat-value red" id="statRemaining">0</span>
+      <span class="stat-value c-coral" id="statRemaining">0</span>
     </div>
     <div class="stat-item">
       <span class="stat-label">Attendance Rate</span>
-      <span class="stat-value purple" id="statRate">0%</span>
+      <span class="stat-value c-blue" id="statRate">0%</span>
     </div>
   </div>
 
-  <!-- Progress -->
+  <!-- ── Progress ── -->
   <div class="progress-bar-wrap">
     <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
     <div class="progress-label" id="progressLabel">0 / 0 checked in</div>
   </div>
 
-  <!-- Main -->
+  <!-- ── Main ── -->
   <main>
     <div class="left-panel">
       <div class="search-area">
         <span class="search-label">// find attendee</span>
         <div class="search-wrap">
           <span class="search-icon">⌕</span>
-          <input class="search-input" id="searchInput" placeholder="Search by name, company, room, or type..." oninput="renderList()" />
+          <input class="search-input" id="searchInput" placeholder="Search by name, company, room, or time slot..." oninput="renderList()" />
           <button class="filter-btn" id="filterBtn" onclick="toggleFilter()">⬤ Show all</button>
         </div>
       </div>
@@ -876,15 +899,15 @@
       <div class="add-section">
         <div class="add-section-title">// register walk-in</div>
         <div class="add-form">
-          <input class="add-input" id="walkName" placeholder="Full Name *" />
-          <input class="add-input" id="walkCompany" placeholder="Company / Title" />
-          <input class="add-input" id="walkRoom" placeholder="Start Room" />
+          <input class="add-input" id="walkName"    placeholder="Full Name *" />
+          <input class="add-input" id="walkCompany" placeholder="Company" />
+          <input class="add-input" id="walkTitle"   placeholder="Title / Role" />
+          <input class="add-input" id="walkRoom"    placeholder="Start Room" />
           <div class="add-row">
             <select class="add-select" id="walkType">
-              <option value="general">General</option>
-              <option value="vip">VIP</option>
-              <option value="speaker">Speaker</option>
-              <option value="staff">Staff</option>
+              <option value="morning">Morning</option>
+              <option value="midday">Mid-Day</option>
+              <option value="afternoon">Afternoon</option>
             </select>
             <button class="add-btn" onclick="addWalkin()">+ Add</button>
           </div>
@@ -901,41 +924,44 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-  // ── Supabase config ──────────────────────────────────────────────
-  const SUPABASE_URL = 'https://whvtsoyqgbefbztvtlta.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndodnRzb3lxZ2JlZmJ6dHZ0bHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyNzQxNTgsImV4cCI6MjA4ODg1MDE1OH0.M64gY67QgxNvZ3vD0HGcHQHGhAb9m0Nzqtrzmg3SCLw';
-  const TABLE = 'attendees';
+  // ── Supabase ─────────────────────────────────────────────────────
+  var SUPABASE_URL = 'https://whvtsoyqgbefbztvtlta.supabase.co';
+  var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndodnRzb3lxZ2JlZmJ6dHZ0bHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyNzQxNTgsImV4cCI6MjA4ODg1MDE1OH0.M64gY67QgxNvZ3vD0HGcHQHGhAb9m0Nzqtrzmg3SCLw';
+  var TABLE = 'attendees';
 
-  const BASE_HEADERS = {
-    'Content-Type': 'application/json',
-    'apikey': SUPABASE_KEY,
-    'Authorization': 'Bearer ' + SUPABASE_KEY,
-    'Prefer': 'return=representation'
-  };
-
-  async function sbFetch(path, options) {
-    options = options || {};
-    const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
-      headers: Object.assign({}, BASE_HEADERS, options.headers || {}),
-      method: options.method || 'GET',
-      body: options.body || undefined
+  function sbFetch(path, opts) {
+    opts = opts || {};
+    var method = opts.method || 'GET';
+    // For mutations we want minimal return to avoid RLS return issues
+    var prefer = (method === 'GET') ? 'count=none' : 'return=representation';
+    return fetch(SUPABASE_URL + '/rest/v1/' + path, {
+      method: method,
+      headers: {
+        'Content-Type':  'application/json',
+        'apikey':        SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Prefer':        prefer
+      },
+      body: opts.body || undefined
+    }).then(function(res) {
+      if (!res.ok) return res.text().then(function(t){ throw new Error(t); });
+      if (res.status === 204) return null;
+      return res.json();
     });
-    if (!res.ok) throw new Error(await res.text());
-    return res.status === 204 ? null : res.json();
   }
 
   // ── State ────────────────────────────────────────────────────────
   var attendees = [];
-  var activity = [];
-  var filterUnchecked = false;
+  var activity  = [];
+  var filterUnchecked  = false;
   var eventName = '';
   var parsedCSVHeaders = [];
-  var parsedCSVRows = [];
+  var parsedCSVRows    = [];
 
   var avatarColors = [
-    ['#7c6ff7','#fff'],['#00e5a0','#000'],['#ff6b6b','#fff'],
-    ['#ffc107','#000'],['#4ecdc4','#000'],['#a855f7','#fff'],
-    ['#f97316','#fff'],['#06b6d4','#000']
+    ['#0C62FB','#fff'], ['#CCFF33','#000'], ['#FF4D5F','#fff'],
+    ['#C7B9FF','#000'], ['#1BE1F2','#000'], ['#7c6ff7','#fff'],
+    ['#f97316','#fff'], ['#06b6d4','#000']
   ];
 
   function getColor(n) {
@@ -949,32 +975,32 @@
   }
 
   function timeNow() {
-    return new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit', hour12:true});
+    return new Date().toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit',hour12:true});
   }
 
-  function setSyncStatus(status) {
-    var dot = document.getElementById('syncDot');
+  function setSyncStatus(s) {
+    var dot   = document.getElementById('syncDot');
     var label = document.getElementById('syncLabel');
-    if (status === 'live') { dot.className = 'sync-dot live'; label.textContent = 'live sync'; }
-    else if (status === 'error') { dot.className = 'sync-dot error'; label.textContent = 'offline'; }
-    else { dot.className = 'sync-dot'; label.textContent = 'connecting...'; }
+    if (s === 'live')  { dot.className = 'sync-dot live';  label.textContent = 'live sync'; }
+    else if (s === 'error') { dot.className = 'sync-dot error'; label.textContent = 'offline'; }
+    else               { dot.className = 'sync-dot';       label.textContent = 'connecting...'; }
   }
 
-  // ── Event setup ──────────────────────────────────────────────────
+  // ── Setup ────────────────────────────────────────────────────────
   function startEvent() {
     var nm = document.getElementById('eventNameInput').value.trim();
-    if (!nm) { document.getElementById('eventNameInput').style.borderColor = 'var(--warn)'; return; }
+    if (!nm) { document.getElementById('eventNameInput').style.borderColor='var(--coral)'; return; }
     var dt = document.getElementById('eventDateInput').value;
     eventName = nm;
-    var displayDate = dt ? new Date(dt + 'T12:00:00').toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) : 'Today';
+    var disp = dt ? new Date(dt+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : 'Today';
     document.getElementById('headerEventName').textContent = nm;
-    document.getElementById('headerEventDate').textContent = displayDate;
+    document.getElementById('headerEventDate').textContent = disp;
     document.getElementById('setupModal').style.display = 'none';
     loadAttendees();
     subscribeRealtime();
   }
 
-  // ── Load from Supabase ───────────────────────────────────────────
+  // ── Load ─────────────────────────────────────────────────────────
   function loadAttendees() {
     document.getElementById('attendeeList').innerHTML =
       '<div class="loading-row"><div class="spinner"></div>Loading attendees...</div>';
@@ -983,20 +1009,20 @@
       .then(function(data) {
         attendees = data || [];
         setSyncStatus('live');
-        updateStats();
-        renderList();
+        updateStats(); renderList();
       })
-      .catch(function() {
+      .catch(function(e) {
         setSyncStatus('error');
-        showToast('!', 'Could not connect to database');
+        showToast('!', 'Database connection failed');
         document.getElementById('attendeeList').innerHTML =
-          '<div class="empty-state"><div class="empty-state-icon">⚠</div><div class="empty-state-text">Database connection failed.<br>Check your network and refresh.</div></div>';
+          '<div class="empty-state"><div class="empty-state-icon">⚠</div>' +
+          '<div class="empty-state-text">Could not reach database.<br>Check your connection and refresh.</div></div>';
       });
   }
 
-  // ── Realtime via WebSocket ───────────────────────────────────────
+  // ── Realtime ─────────────────────────────────────────────────────
   function subscribeRealtime() {
-    var wsUrl = SUPABASE_URL.replace('https://', 'wss://') +
+    var wsUrl = SUPABASE_URL.replace('https://','wss://') +
       '/realtime/v1/websocket?apikey=' + SUPABASE_KEY + '&vsn=1.0.0';
     var ws = new WebSocket(wsUrl);
     var hb;
@@ -1005,7 +1031,7 @@
       ws.send(JSON.stringify({
         topic: 'realtime:public:' + TABLE,
         event: 'phx_join',
-        payload: { config: { postgres_changes: [{ event: '*', schema: 'public', table: TABLE }] } },
+        payload: { config: { postgres_changes: [{ event:'*', schema:'public', table:TABLE }] } },
         ref: '1'
       }));
       hb = setInterval(function() {
@@ -1016,45 +1042,33 @@
 
     ws.onmessage = function(msg) {
       var data = JSON.parse(msg.data);
-      // Any postgres change = reload from DB to stay in sync
       if (data.event === 'postgres_changes' ||
           (data.payload && data.payload.data && data.payload.data.type)) {
         sbFetch(TABLE + '?event_name=eq.' + encodeURIComponent(eventName) + '&order=name.asc')
-          .then(function(fresh) {
-            attendees = fresh || [];
-            updateStats();
-            renderList();
-          }).catch(function(){});
+          .then(function(fresh) { attendees = fresh || []; updateStats(); renderList(); })
+          .catch(function(){});
       }
-      if (data.event === 'phx_reply' && data.payload && data.payload.status === 'ok') {
-        setSyncStatus('live');
-      }
+      if (data.event === 'phx_reply' && data.payload && data.payload.status === 'ok') setSyncStatus('live');
     };
 
-    ws.onerror = function() { setSyncStatus('error'); };
-    ws.onclose = function() {
-      clearInterval(hb);
-      setSyncStatus('error');
-      setTimeout(subscribeRealtime, 3000);
-    };
+    ws.onerror  = function() { setSyncStatus('error'); };
+    ws.onclose  = function() { clearInterval(hb); setSyncStatus('error'); setTimeout(subscribeRealtime, 3000); };
   }
 
-  // ── Toggle check-in ──────────────────────────────────────────────
+  // ── Check-in toggle ──────────────────────────────────────────────
   function toggleCheckin(id) {
     var att = attendees.find(function(a){ return a.id === id; });
     if (!att) return;
-
     var newState = !att.checked_in;
-    var newTime = newState ? timeNow() : null;
+    var newTime  = newState ? timeNow() : null;
 
-    // Optimistic update
-    att.checked_in = newState;
+    // Optimistic
+    att.checked_in      = newState;
     att.checked_in_time = newTime;
-    updateStats();
-    renderList();
+    updateStats(); renderList();
 
     if (newState) {
-      activity.unshift({name:att.name, company:att.company, room:att.room, time:newTime});
+      activity.unshift({name:att.name, company:att.company, title:att.title, room:att.room, time:newTime});
       showToast('✓', att.name + ' checked in');
     } else {
       activity = activity.filter(function(x){ return x.name !== att.name; });
@@ -1066,28 +1080,38 @@
       method: 'PATCH',
       body: JSON.stringify({checked_in: newState, checked_in_time: newTime})
     }).catch(function() {
-      // Revert on failure
-      att.checked_in = !newState;
+      att.checked_in      = !newState;
       att.checked_in_time = newState ? null : newTime;
-      updateStats();
-      renderList();
+      updateStats(); renderList();
       showToast('!', 'Sync failed — check connection');
     });
   }
 
   // ── Render list ──────────────────────────────────────────────────
+  function slotTag(type) {
+    var map = {
+      morning:   'tag-morning',
+      midday:    'tag-midday',
+      afternoon: 'tag-afternoon'
+    };
+    var label = {morning:'Morning', midday:'Mid-Day', afternoon:'Afternoon'};
+    var cls   = map[type] || 'tag-unknown';
+    var lbl   = label[type] || (type || 'Unknown');
+    return '<span class="tag ' + cls + '">' + lbl + '</span>';
+  }
+
   function renderList() {
-    var q = document.getElementById('searchInput').value.toLowerCase();
+    var q    = document.getElementById('searchInput').value.toLowerCase();
     var list = document.getElementById('attendeeList');
-    var tagMap = {vip:'tag-vip',speaker:'tag-speaker',staff:'tag-staff',general:'tag-general'};
 
     if (attendees.length === 0) {
-      list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⬆</div><div class="empty-state-text">No attendees yet.<br>Import a CSV or add a walk-in.</div></div>';
+      list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⬆</div>' +
+        '<div class="empty-state-text">No attendees yet.<br>Import a CSV or add a walk-in.</div></div>';
       return;
     }
 
     var filtered = attendees.filter(function(a) {
-      var fields = [a.name, a.company, a.email, a.type, a.room];
+      var fields = [a.name, a.company, a.title, a.email, a.type, a.room];
       var matchQ = !q || fields.some(function(f){ return (f||'').toLowerCase().includes(q); });
       var matchF = !filterUnchecked || !a.checked_in;
       return matchQ && matchF;
@@ -1099,53 +1123,53 @@
     }
 
     list.innerHTML = filtered.map(function(a) {
-      var colors = getColor(a.name);
-      var bg = colors[0], fg = colors[1];
-      var typeKey = a.type || 'general';
-      var tagClass = tagMap[typeKey] || 'tag-general';
+      var col = getColor(a.name);
+      var meta = [a.company, a.title].filter(Boolean).join(' · ');
+      if (a.email) meta += (meta ? ' · ' : '') + a.email;
       return '<div class="attendee-row ' + (a.checked_in ? 'checked-in' : '') + '" onclick="toggleCheckin(' + a.id + ')">' +
-        '<div class="avatar ' + (a.checked_in ? 'checked' : '') + '" style="background:' + bg + ';color:' + fg + '">' + initials(a.name) + '</div>' +
+        '<div class="avatar ' + (a.checked_in ? 'checked' : '') + '" style="background:' + col[0] + ';color:' + col[1] + '">' + initials(a.name) + '</div>' +
         '<div class="attendee-info">' +
           '<div class="attendee-name ' + (a.checked_in ? 'struck' : '') + '">' + a.name + '</div>' +
-          '<div class="attendee-meta">' + (a.company || '') + (a.email ? ' · ' + a.email : '') + '</div>' +
+          '<div class="attendee-meta">' + (meta || '—') + '</div>' +
         '</div>' +
         '<div class="attendee-right">' +
           (a.room ? '<span class="room-badge">⬡ ' + a.room + '</span>' : '') +
-          '<span class="tag ' + tagClass + '">' + typeKey.toUpperCase() + '</span>' +
+          slotTag(a.type) +
           (a.checked_in ? '<span class="checkin-time">' + (a.checked_in_time || '') + '</span>' : '') +
           '<button class="check-btn ' + (a.checked_in ? 'done' : '') + '" onclick="event.stopPropagation();toggleCheckin(' + a.id + ')">' +
             (a.checked_in ? '✓' : '○') +
           '</button>' +
         '</div>' +
-        '</div>';
+      '</div>';
     }).join('');
   }
 
   function renderActivity() {
     var feed = document.getElementById('activityFeed');
-    document.getElementById('activityCount').textContent = activity.length + ' event' + (activity.length !== 1 ? 's' : '');
+    document.getElementById('activityCount').textContent =
+      activity.length + ' event' + (activity.length !== 1 ? 's' : '');
     if (activity.length === 0) {
-      feed.innerHTML = '<div class="empty-state"><div class="empty-state-icon">◎</div><div class="empty-state-text">Check-ins appear here<br>in real time across all devices</div></div>';
+      feed.innerHTML = '<div class="empty-state"><div class="empty-state-icon">◎</div>' +
+        '<div class="empty-state-text">Check-ins appear here<br>in real time across all devices</div></div>';
       return;
     }
     feed.innerHTML = activity.map(function(a) {
+      var sub = a.room ? '⬡ ' + a.room : ([a.company, a.title].filter(Boolean).join(' · ') || '');
       return '<div class="activity-item">' +
         '<div class="activity-name">' + a.name + '</div>' +
-        '<div class="activity-meta"><span>' + (a.room ? '⬡ ' + a.room : (a.company || '')) + '</span>' +
+        '<div class="activity-meta"><span>' + sub + '</span>' +
         '<span class="activity-time">' + a.time + '</span></div></div>';
     }).join('');
   }
 
   function updateStats() {
-    var total = attendees.length;
+    var total   = attendees.length;
     var checked = attendees.filter(function(a){ return a.checked_in; }).length;
-    var remaining = total - checked;
-    var rate = total > 0 ? Math.round((checked / total) * 100) : 0;
-    document.getElementById('statTotal').textContent = total;
-    document.getElementById('statChecked').textContent = checked;
-    document.getElementById('statRemaining').textContent = remaining;
-    document.getElementById('statRate').textContent = rate + '%';
-    document.getElementById('progressFill').style.width = rate + '%';
+    document.getElementById('statTotal').textContent     = total;
+    document.getElementById('statChecked').textContent   = checked;
+    document.getElementById('statRemaining').textContent = total - checked;
+    document.getElementById('statRate').textContent      = total > 0 ? Math.round(checked/total*100) + '%' : '0%';
+    document.getElementById('progressFill').style.width  = total > 0 ? Math.round(checked/total*100) + '%' : '0%';
     document.getElementById('progressLabel').textContent = checked + ' / ' + total + ' checked in';
   }
 
@@ -1159,38 +1183,62 @@
 
   // ── Walk-in ──────────────────────────────────────────────────────
   function addWalkin() {
-    var name = document.getElementById('walkName').value.trim();
-    if (!name) { document.getElementById('walkName').style.borderColor = 'var(--warn)'; return; }
-    var company = document.getElementById('walkCompany').value.trim() || 'Walk-in';
-    var room = document.getElementById('walkRoom').value.trim();
-    var type = document.getElementById('walkType').value;
+    var name    = document.getElementById('walkName').value.trim();
+    if (!name) { document.getElementById('walkName').style.borderColor='var(--coral)'; return; }
+    var company = document.getElementById('walkCompany').value.trim();
+    var title   = document.getElementById('walkTitle').value.trim();
+    var room    = document.getElementById('walkRoom').value.trim();
+    var type    = document.getElementById('walkType').value;
 
-    sbFetch(TABLE, {
-      method: 'POST',
-      body: JSON.stringify({name:name, company:company, email:'', type:type, room:room,
-        checked_in:false, checked_in_time:null, event_name:eventName})
-    }).then(function(created) {
-      attendees.unshift(created[0]);
-      document.getElementById('walkName').value = '';
-      document.getElementById('walkCompany').value = '';
-      document.getElementById('walkRoom').value = '';
-      document.getElementById('walkType').value = 'general';
-      document.getElementById('walkName').style.borderColor = '';
-      showToast('＋', name + ' added');
-      updateStats();
-      renderList();
-    }).catch(function() { showToast('!', 'Could not add attendee'); });
+    var payload = {
+      name:            name,
+      company:         company || null,
+      title:           title   || null,
+      email:           null,
+      type:            type,
+      room:            room    || null,
+      checked_in:      false,
+      checked_in_time: null,
+      event_name:      eventName
+    };
+
+    sbFetch(TABLE, { method:'POST', body: JSON.stringify(payload) })
+      .then(function(result) {
+        // result may be array or single object
+        var created = Array.isArray(result) ? result[0] : result;
+        if (created) {
+          attendees.unshift(created);
+        } else {
+          // If return=representation gave nothing, reload from DB
+          return loadAttendees();
+        }
+        clearWalkinForm();
+        showToast('＋', name + ' added');
+        updateStats(); renderList();
+      })
+      .catch(function(err) {
+        console.error('Walk-in error:', err);
+        showToast('!', 'Could not add attendee — check Supabase table has a "title" column');
+      });
+  }
+
+  function clearWalkinForm() {
+    ['walkName','walkCompany','walkTitle','walkRoom'].forEach(function(id){
+      document.getElementById(id).value = '';
+      document.getElementById(id).style.borderColor = '';
+    });
+    document.getElementById('walkType').value = 'morning';
   }
 
   // ── CSV Import ───────────────────────────────────────────────────
-  function showImport() { document.getElementById('importModal').style.display = 'flex'; }
-  function hideImport() { document.getElementById('importModal').style.display = 'none'; }
+  function showImport() { document.getElementById('importModal').style.display='flex'; }
+  function hideImport() { document.getElementById('importModal').style.display='none'; }
 
   function resetImport() {
     document.getElementById('importStep1').style.display = 'block';
     document.getElementById('importStep2').style.display = 'none';
     document.getElementById('csvFileInput').value = '';
-    parsedCSVHeaders = []; parsedCSVRows = [];
+    parsedCSVHeaders=[]; parsedCSVRows=[];
   }
 
   function handleDrop(e) {
@@ -1206,171 +1254,173 @@
   function processFile(file) {
     var nm = file.name.toLowerCase();
     if (nm.endsWith('.csv')) {
-      var reader = new FileReader();
-      reader.onload = function(e) { parseCSVText(e.target.result); };
-      reader.readAsText(file);
-    } else if (nm.endsWith('.xlsx') || nm.endsWith('.xls')) {
-      var reader2 = new FileReader();
-      reader2.onload = function(e) {
-        var wb = XLSX.read(e.target.result, {type:'array'});
-        var ws = wb.Sheets[wb.SheetNames[0]];
-        parseCSVText(XLSX.utils.sheet_to_csv(ws));
+      var r = new FileReader();
+      r.onload = function(e){ parseCSVText(e.target.result); };
+      r.readAsText(file);
+    } else if (nm.endsWith('.xlsx')||nm.endsWith('.xls')) {
+      var r2 = new FileReader();
+      r2.onload = function(e){
+        var wb = XLSX.read(e.target.result,{type:'array'});
+        parseCSVText(XLSX.utils.sheet_to_csv(wb.Sheets[wb.SheetNames[0]]));
       };
-      reader2.readAsArrayBuffer(file);
+      r2.readAsArrayBuffer(file);
     } else {
-      showToast('!', 'Please upload a .csv, .xlsx, or .xls file');
+      showToast('!','Please upload a .csv, .xlsx, or .xls file');
     }
   }
 
   function parseLine(line) {
-    var result = [], current = '', inQuotes = false;
-    for (var i = 0; i < line.length; i++) {
-      var ch = line[i];
-      if (ch === '"') inQuotes = !inQuotes;
-      else if (ch === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
-      else current += ch;
+    var res=[],cur='',inQ=false;
+    for (var i=0;i<line.length;i++){
+      var ch=line[i];
+      if(ch==='"') inQ=!inQ;
+      else if(ch===','&&!inQ){res.push(cur.trim());cur='';}
+      else cur+=ch;
     }
-    result.push(current.trim());
-    return result;
+    res.push(cur.trim());
+    return res;
   }
 
   function parseCSVText(text) {
-    var lines = text.trim().split('\n').filter(function(l){ return l.trim(); });
-    if (lines.length < 2) { showToast('!', 'File appears empty'); return; }
+    var lines = text.trim().split('\n').filter(function(l){return l.trim();});
+    if(lines.length<2){showToast('!','File appears empty');return;}
     parsedCSVHeaders = parseLine(lines[0]);
-    parsedCSVRows = lines.slice(1).map(parseLine);
+    parsedCSVRows    = lines.slice(1).map(parseLine);
     document.getElementById('importMeta').innerHTML =
-      '<strong>' + parsedCSVRows.length + '</strong> rows detected &nbsp;·&nbsp; <strong>' + parsedCSVHeaders.length + '</strong> columns';
+      '<strong>'+parsedCSVRows.length+'</strong> rows &nbsp;·&nbsp; <strong>'+parsedCSVHeaders.length+'</strong> columns';
     buildMapper(); buildPreview();
-    document.getElementById('importStep1').style.display = 'none';
-    document.getElementById('importStep2').style.display = 'block';
+    document.getElementById('importStep1').style.display='none';
+    document.getElementById('importStep2').style.display='block';
   }
 
   function buildMapper() {
-    var autoMatch = {
-      mapName: ['name','full name','attendee','guest'],
-      mapCompany: ['company','org','organization','employer','title','firm'],
-      mapEmail: ['email','e-mail','mail'],
-      mapType: ['type','ticket','tier','vip','category','registration'],
-      mapRoom: ['room','start room','session','track','table','location']
+    var auto = {
+      mapName:    ['name','full name','attendee','guest'],
+      mapCompany: ['company','org','organization','employer','firm'],
+      mapTitle:   ['title','role','position','job'],
+      mapEmail:   ['email','e-mail','mail'],
+      mapType:    ['time slot','timeslot','slot','session','type','ticket','tier'],
+      mapRoom:    ['room','start room','track','table','location']
     };
-    ['mapName','mapCompany','mapEmail','mapType','mapRoom'].forEach(function(id) {
+    ['mapName','mapCompany','mapTitle','mapEmail','mapType','mapRoom'].forEach(function(id){
       var sel = document.getElementById(id);
       sel.innerHTML = ['— skip —'].concat(parsedCSVHeaders).map(function(h,i){
-        return '<option value="' + (i===0?'':h) + '">' + h + '</option>';
+        return '<option value="'+(i===0?'':h)+'">'+h+'</option>';
       }).join('');
-      var kws = autoMatch[id] || [];
-      for (var k = 0; k < kws.length; k++) {
-        var match = parsedCSVHeaders.find(function(h){ return h.toLowerCase().includes(kws[k]); });
-        if (match) { sel.value = match; break; }
+      var kws = auto[id]||[];
+      for(var k=0;k<kws.length;k++){
+        var m = parsedCSVHeaders.find(function(h){return h.toLowerCase().includes(kws[k]);});
+        if(m){sel.value=m;break;}
       }
     });
   }
 
   function buildPreview() {
-    var preview = parsedCSVRows.slice(0,3);
+    var prev = parsedCSVRows.slice(0,3);
     document.getElementById('previewTable').innerHTML =
-      '<thead><tr>' + parsedCSVHeaders.map(function(h){ return '<th>' + h + '</th>'; }).join('') + '</tr></thead>' +
-      '<tbody>' + preview.map(function(row){
-        return '<tr>' + row.map(function(cell){ return '<td>' + (cell||'—') + '</td>'; }).join('') + '</tr>';
-      }).join('') + '</tbody>';
+      '<thead><tr>'+parsedCSVHeaders.map(function(h){return '<th>'+h+'</th>';}).join('')+'</tr></thead>'+
+      '<tbody>'+prev.map(function(row){
+        return '<tr>'+row.map(function(c){return '<td>'+(c||'—')+'</td>';}).join('')+'</tr>';
+      }).join('')+'</tbody>';
+  }
+
+  function normalizeSlot(val) {
+    if(!val) return 'morning';
+    var v = val.toLowerCase();
+    if(v.includes('mid')||v.includes('noon')||v.includes('lunch')) return 'midday';
+    if(v.includes('after')||v.includes('pm')) return 'afternoon';
+    return 'morning';
   }
 
   function commitImport() {
-    var mapName = document.getElementById('mapName').value;
-    if (!mapName) { showToast('!', 'Name column is required'); return; }
+    var mapName    = document.getElementById('mapName').value;
+    if(!mapName){showToast('!','Name column is required');return;}
     var mapCompany = document.getElementById('mapCompany').value;
-    var mapEmail = document.getElementById('mapEmail').value;
-    var mapType = document.getElementById('mapType').value;
-    var mapRoom = document.getElementById('mapRoom').value;
+    var mapTitle   = document.getElementById('mapTitle').value;
+    var mapEmail   = document.getElementById('mapEmail').value;
+    var mapType    = document.getElementById('mapType').value;
+    var mapRoom    = document.getElementById('mapRoom').value;
 
-    function normalizeType(val) {
-      if (!val) return 'general';
-      var v = val.toLowerCase();
-      if (v.includes('vip')||v.includes('executive')||v.includes('premium')) return 'vip';
-      if (v.includes('speak')) return 'speaker';
-      if (v.includes('staff')||v.includes('crew')) return 'staff';
-      return 'general';
-    }
-
-    function getCol(row, col) {
-      if (!col) return '';
+    function gc(row, col) {
+      if(!col) return '';
       var idx = parsedCSVHeaders.indexOf(col);
-      return idx >= 0 ? (row[idx]||'').trim() : '';
+      return idx>=0 ? (row[idx]||'').trim() : '';
     }
 
     var rows = parsedCSVRows
-      .filter(function(row){ return getCol(row, mapName); })
-      .map(function(row) {
+      .filter(function(row){return gc(row,mapName);})
+      .map(function(row){
         return {
-          name: getCol(row, mapName),
-          company: getCol(row, mapCompany) || '—',
-          email: getCol(row, mapEmail),
-          type: normalizeType(getCol(row, mapType)),
-          room: getCol(row, mapRoom),
-          checked_in: false,
+          name:            gc(row,mapName),
+          company:         gc(row,mapCompany)||null,
+          title:           gc(row,mapTitle)||null,
+          email:           gc(row,mapEmail)||null,
+          type:            normalizeSlot(gc(row,mapType)),
+          room:            gc(row,mapRoom)||null,
+          checked_in:      false,
           checked_in_time: null,
-          event_name: eventName
+          event_name:      eventName
         };
       });
 
-    if (rows.length === 0) { showToast('!', 'No valid rows found'); return; }
+    if(rows.length===0){showToast('!','No valid rows found');return;}
 
-    // Insert in batches of 100
-    var batches = [];
-    for (var i = 0; i < rows.length; i += 100) batches.push(rows.slice(i, i+100));
+    var batches=[];
+    for(var i=0;i<rows.length;i+=100) batches.push(rows.slice(i,i+100));
 
-    Promise.all(batches.map(function(batch) {
-      return sbFetch(TABLE, {method:'POST', body:JSON.stringify(batch)});
-    })).then(function() {
+    Promise.all(batches.map(function(batch){
+      return sbFetch(TABLE,{method:'POST',body:JSON.stringify(batch)});
+    })).then(function(){
       hideImport(); resetImport();
       loadAttendees();
-      showToast('✓', rows.length + ' attendees imported');
-    }).catch(function() {
-      showToast('!', 'Import failed — check connection');
+      showToast('✓', rows.length+' attendees imported');
+    }).catch(function(err){
+      console.error(err);
+      showToast('!','Import failed — check database connection');
     });
   }
 
   function loadSampleData() {
     var sample = [
-      {name:'Sarah Okonkwo', company:'Accenture · CMO', email:'s.okonkwo@accenture.com', type:'vip', room:'Boardroom A'},
-      {name:'James Theriault', company:'Target Corp · CTO', email:'j.theriault@target.com', type:'vip', room:'Boardroom A'},
-      {name:'Michelle Park', company:'3M · VP Marketing', email:'m.park@3m.com', type:'general', room:'Main Hall'},
-      {name:'David Nguyen', company:'Slalom · Director', email:'d.nguyen@slalom.com', type:'speaker', room:'Stage'},
-      {name:'Priya Sharma', company:'Best Buy · CIO', email:'p.sharma@bestbuy.com', type:'speaker', room:'Stage'},
-      {name:'Carlos Reyes', company:'UnitedHealth · CFO', email:'c.reyes@uhg.com', type:'vip', room:'Boardroom A'},
-      {name:'Anna Lindqvist', company:'General Mills · EVP', email:'a.lindqvist@generalmills.com', type:'general', room:'Main Hall'},
-      {name:'Fatima Al-Hassan', company:'Mayo Clinic · CMO', email:'f.alhassan@mayo.edu', type:'vip', room:'Boardroom B'},
-      {name:'Ingrid Sorenson', company:'Allianz · EVP', email:'i.sorenson@allianz.com', type:'speaker', room:'Stage'},
-      {name:'Brianna Foster', company:'Slalom · Event Staff', email:'b.foster@slalom.com', type:'staff', room:'Registration'}
-    ].map(function(a){ return Object.assign({}, a, {checked_in:false, checked_in_time:null, event_name:eventName}); });
+      {name:'Sarah Okonkwo',    company:'Accenture',   title:'CMO',            email:'s.okonkwo@accenture.com',    type:'morning',   room:'Boardroom A'},
+      {name:'James Theriault',  company:'Target Corp',  title:'CTO',            email:'j.theriault@target.com',     type:'morning',   room:'Boardroom A'},
+      {name:'Michelle Park',    company:'3M',           title:'VP Marketing',   email:'m.park@3m.com',              type:'midday',    room:'Main Hall'},
+      {name:'David Nguyen',     company:'Slalom',       title:'Director',       email:'d.nguyen@slalom.com',        type:'morning',   room:'Stage'},
+      {name:'Priya Sharma',     company:'Best Buy',     title:'CIO',            email:'p.sharma@bestbuy.com',       type:'afternoon', room:'Stage'},
+      {name:'Carlos Reyes',     company:'UnitedHealth', title:'CFO',            email:'c.reyes@uhg.com',            type:'morning',   room:'Boardroom A'},
+      {name:'Anna Lindqvist',   company:'General Mills',title:'EVP',            email:'a.lindqvist@generalmills.com',type:'midday',   room:'Main Hall'},
+      {name:'Fatima Al-Hassan', company:'Mayo Clinic',  title:'CMO',            email:'f.alhassan@mayo.edu',         type:'afternoon', room:'Boardroom B'},
+      {name:'Ingrid Sorenson',  company:'Allianz',      title:'EVP',            email:'i.sorenson@allianz.com',     type:'midday',    room:'Stage'},
+      {name:'Brianna Foster',   company:'Slalom',       title:'Event Staff',    email:'b.foster@slalom.com',        type:'morning',   room:'Registration'}
+    ].map(function(a){ return Object.assign({},a,{checked_in:false,checked_in_time:null,event_name:eventName}); });
 
-    sbFetch(TABLE, {method:'POST', body:JSON.stringify(sample)})
-      .then(function() { hideImport(); loadAttendees(); showToast('✓', sample.length + ' sample attendees loaded'); })
-      .catch(function() { showToast('!', 'Could not load sample data'); });
+    sbFetch(TABLE,{method:'POST',body:JSON.stringify(sample)})
+      .then(function(){ hideImport(); loadAttendees(); showToast('✓',sample.length+' sample attendees loaded'); })
+      .catch(function(){ showToast('!','Could not load sample data'); });
   }
 
   // ── Export ───────────────────────────────────────────────────────
   function exportCSV() {
-    if (attendees.length === 0) { showToast('!', 'No data to export'); return; }
-    var header = 'Name,Company,Email,Type,Start Room,Checked In,Check-In Time\n';
-    var rows = attendees.map(function(a) {
-      return '"' + (a.name||'') + '","' + (a.company||'') + '","' + (a.email||'') + '","' +
-        (a.type||'') + '","' + (a.room||'') + '","' + (a.checked_in?'Yes':'No') + '","' + (a.checked_in_time||'') + '"';
+    if(!attendees.length){showToast('!','No data to export');return;}
+    var hdr = 'Name,Company,Title,Email,Time Slot,Start Room,Checked In,Check-In Time\n';
+    var rows = attendees.map(function(a){
+      return '"'+(a.name||'')+'","'+(a.company||'')+'","'+(a.title||'')+'","'+
+        (a.email||'')+'","'+(a.type||'')+'","'+(a.room||'')+'","'+
+        (a.checked_in?'Yes':'No')+'","'+(a.checked_in_time||'')+'"';
     }).join('\n');
-    var blob = new Blob([header + rows], {type:'text/csv'});
-    var url = URL.createObjectURL(blob);
+    var blob = new Blob([hdr+rows],{type:'text/csv'});
+    var url  = URL.createObjectURL(blob);
     var link = document.createElement('a');
-    link.href = url; link.download = (eventName||'event') + '-checkin.csv';
+    link.href=url; link.download=(eventName||'event')+'-checkin.csv';
     link.click(); URL.revokeObjectURL(url);
-    showToast('↓', 'CSV exported');
+    showToast('↓','CSV exported');
   }
 
   // ── Toast ────────────────────────────────────────────────────────
   function showToast(icon, msg) {
     var toast = document.getElementById('toast');
     document.getElementById('toastIcon').textContent = icon;
-    document.getElementById('toastMsg').textContent = msg;
+    document.getElementById('toastMsg').textContent  = msg;
     toast.classList.add('show');
     clearTimeout(toast._t);
     toast._t = setTimeout(function(){ toast.classList.remove('show'); }, 2800);
