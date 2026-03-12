@@ -932,8 +932,8 @@
   function sbFetch(path, opts) {
     opts = opts || {};
     var method = opts.method || 'GET';
-    // For mutations we want minimal return to avoid RLS return issues
-    var prefer = (method === 'GET') ? 'count=none' : 'return=representation';
+    // return=minimal avoids RLS "WITH CHECK" issues on insert/patch response
+    var prefer = (method === 'GET') ? 'count=none' : 'return=minimal';
     return fetch(SUPABASE_URL + '/rest/v1/' + path, {
       method: method,
       headers: {
@@ -945,7 +945,7 @@
       body: opts.body || undefined
     }).then(function(res) {
       if (!res.ok) return res.text().then(function(t){ throw new Error(t); });
-      if (res.status === 204) return null;
+      if (res.status === 201 || res.status === 204) return null;
       return res.json();
     });
   }
@@ -1203,22 +1203,15 @@
     };
 
     sbFetch(TABLE, { method:'POST', body: JSON.stringify(payload) })
-      .then(function(result) {
-        // result may be array or single object
-        var created = Array.isArray(result) ? result[0] : result;
-        if (created) {
-          attendees.unshift(created);
-        } else {
-          // If return=representation gave nothing, reload from DB
-          return loadAttendees();
-        }
+      .then(function() {
+        // return=minimal means no body returned — reload from DB to get the new row
         clearWalkinForm();
         showToast('＋', name + ' added');
-        updateStats(); renderList();
+        return loadAttendees();
       })
       .catch(function(err) {
-        console.error('Walk-in error:', err);
-        showToast('!', 'Could not add attendee — check Supabase table has a "title" column');
+        console.error('Walk-in Supabase error:', err.message);
+        showToast('!', 'Error: ' + err.message.substring(0, 80));
       });
   }
 
@@ -1375,8 +1368,8 @@
       loadAttendees();
       showToast('✓', rows.length+' attendees imported');
     }).catch(function(err){
-      console.error(err);
-      showToast('!','Import failed — check database connection');
+      console.error('Import error:', err.message);
+      showToast('!', 'Import error: ' + err.message.substring(0, 80));
     });
   }
 
