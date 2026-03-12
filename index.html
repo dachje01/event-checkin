@@ -1337,7 +1337,12 @@
       if (data.event === 'postgres_changes' ||
           (data.payload && data.payload.data && data.payload.data.type)) {
         sbFetch(TABLE + '?event_name=eq.' + encodeURIComponent(eventName) + '&order=name.asc')
-          .then(function(fresh) { attendees = fresh || []; updateStats(); renderList(); })
+          .then(function(fresh) {
+            attendees = fresh || [];
+            updateStats();
+            renderList();
+            if (document.getElementById('salesView').classList.contains('visible')) renderSalesView();
+          })
           .catch(function(){});
       }
       if (data.event === 'phx_reply' && data.payload && data.payload.status === 'ok') setSyncStatus('live');
